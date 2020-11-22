@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_rtc_engine/rtc_local_view.dart' as RtcLocalView;
 import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
@@ -8,39 +8,48 @@ import 'package:flutter/material.dart';
 import '../utils/settings.dart';
 
 class CallPage extends StatefulWidget {
-  /// non-modifiable channel name of the page
-  final String channelName;
-
-  /// non-modifiable client role of the page
-  final ClientRole role;
-
-  /// Creates a call page with given channel name.
-  const CallPage({Key key, this.channelName, this.role}) : super(key: key);
-
+  const CallPage();
+  final ClientRole role = ClientRole.Broadcaster;
+  final String channelName = 'sample';
   @override
   _CallPageState createState() => _CallPageState();
 }
 
 class _CallPageState extends State<CallPage> {
   final _users = <int>[];
+
   final _infoStrings = <String>[];
   bool muted = false;
   RtcEngine _engine;
-
+  Timer _timer;
   @override
   void dispose() {
-    // clear users
     _users.clear();
-    // destroy sdk
+    if (_timer.isActive) _timer.cancel();
     _engine.leaveChannel();
     _engine.destroy();
     super.dispose();
   }
 
+  Future<void> popScreen() async {
+    if (_users.length == 0) {
+      await Fluttertoast.showToast(
+          msg: "Try again after some time",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.black,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      Navigator.pop(context);
+      if (_timer.isActive) _timer.cancel();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    // initialize agora sdk
+    _timer = Timer(const Duration(seconds: 15), () => popScreen());
     initialize();
   }
 
@@ -64,7 +73,6 @@ class _CallPageState extends State<CallPage> {
     await _engine.joinChannel(Token, widget.channelName, null, 0);
   }
 
-  /// Create agora sdk instance and initialize
   Future<void> _initAgoraRtcEngine() async {
     _engine = await RtcEngine.create(APP_ID);
     await _engine.enableVideo();
@@ -72,44 +80,43 @@ class _CallPageState extends State<CallPage> {
     await _engine.setClientRole(widget.role);
   }
 
-  /// Add agora event handlers
   void _addAgoraEventHandlers() {
     _engine.setEventHandler(RtcEngineEventHandler(error: (code) {
       setState(() {
-        final info = 'onError: $code';
+        final info = 'Error: $code';
         _infoStrings.add(info);
       });
     }, joinChannelSuccess: (channel, uid, elapsed) {
-      setState(() {
-        final info = 'onJoinChannel: $channel, uid: $uid';
-        _infoStrings.add(info);
-      });
+      // setState(() {
+      //   final info = '';
+      //   _infoStrings.add(info);
+      // });
     }, leaveChannel: (stats) {
-      setState(() {
-        _infoStrings.add('onLeaveChannel');
-        _users.clear();
-      });
+      if (mounted)
+        setState(() {
+          //_infoStrings.add('');
+          _users.clear();
+        });
     }, userJoined: (uid, elapsed) {
       setState(() {
-        final info = 'userJoined: $uid';
-        _infoStrings.add(info);
+        //  final info = 'User joined : $uid';
+        //  _infoStrings.add(info);
         _users.add(uid);
       });
     }, userOffline: (uid, elapsed) {
       setState(() {
-        final info = 'userOffline: $uid';
-        _infoStrings.add(info);
+        //  final info = '';
+//_infoStrings.add(info);
         _users.remove(uid);
       });
     }, firstRemoteVideoFrame: (uid, width, height, elapsed) {
       setState(() {
-        final info = 'firstRemoteVideo: $uid ${width}x $height';
-        _infoStrings.add(info);
+        //  final info = '';
+        //  _infoStrings.add(info);
       });
     }));
   }
 
-  /// Helper function to get list of native views
   List<Widget> _getRenderViews() {
     final List<StatefulWidget> list = [];
     if (widget.role == ClientRole.Broadcaster) {
@@ -119,12 +126,10 @@ class _CallPageState extends State<CallPage> {
     return list;
   }
 
-  /// Video view wrapper
   Widget _videoView(view) {
     return Expanded(child: Container(child: view));
   }
 
-  /// Video view row wrapper
   Widget _expandedVideoRow(List<Widget> views) {
     final wrappedViews = views.map<Widget>(_videoView).toList();
     return Expanded(
@@ -134,7 +139,6 @@ class _CallPageState extends State<CallPage> {
     );
   }
 
-  /// Video layout wrapper
   Widget _viewRows() {
     final views = _getRenderViews();
     switch (views.length) {
@@ -172,12 +176,10 @@ class _CallPageState extends State<CallPage> {
     return Container();
   }
 
-  /// Toolbar layout
   Widget _toolbar() {
-    if (widget.role == ClientRole.Audience) return Container();
     return Container(
       alignment: Alignment.bottomCenter,
-      padding: const EdgeInsets.symmetric(vertical: 48),
+      padding: const EdgeInsets.only(bottom: 100),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -222,7 +224,6 @@ class _CallPageState extends State<CallPage> {
     );
   }
 
-  /// Info panel to show logs
   Widget _panel() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 48),
@@ -291,7 +292,7 @@ class _CallPageState extends State<CallPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Agora Flutter QuickStart'),
+        title: Text('Vi App - Random Video'),
       ),
       backgroundColor: Colors.black,
       body: Center(
