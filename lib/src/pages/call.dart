@@ -103,6 +103,9 @@ class _CallPageState extends State<CallPage> {
         //  _infoStrings.add(info);
         _users.add(uid);
       });
+      if (_timer.isActive) {
+        _timer.cancel();
+      }
     }, userOffline: (uid, elapsed) {
       setState(() {
         //  final info = '';

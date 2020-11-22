@@ -29,12 +29,27 @@ class _HomeRouteState extends State<HomeRoute> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          RaisedButton(
-            onPressed: () async {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (_) => CallPage()));
-            },
-            child: Text('Get Started!'),
+          Text(
+            'Random video app',
+            style: Theme.of(context).textTheme.headline5,
+          ),
+          Text('If no user joins after 15 seconds call ends.'),
+          SizedBox(
+            height: 16,
+          ),
+          Center(
+            child: RaisedButton(
+              color: Colors.black,
+              textColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 16, horizontal: 42),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              onPressed: () async {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (_) => CallPage()));
+              },
+              child: Text('Get Started!'),
+            ),
           )
         ],
       ),
