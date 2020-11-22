@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'package:fluttertoast/fluttertoast.dart';
+
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_rtc_engine/rtc_local_view.dart' as RtcLocalView;
 import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../utils/settings.dart';
 
@@ -97,6 +98,9 @@ class _CallPageState extends State<CallPage> {
           //_infoStrings.add('');
           _users.clear();
         });
+      if (_timer.isActive) {
+        _timer.cancel();
+      }
     }, userJoined: (uid, elapsed) {
       setState(() {
         //  final info = 'User joined : $uid';
